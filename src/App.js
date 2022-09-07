@@ -2,20 +2,21 @@ import { useEffect, useState } from 'react';
 import './App.css';
 import TableDataItem from './components/TableDataItem';
 
-const wordsToFind =['BOWLING', 'STUMPED', 'FIELDER', 'BATSMAN', 'RUNOUT', 'CATCH', 'UMPIRE', 'INNING', 'APPEAL', 'BATTING', 'SPIN', 'TEA', 'RUNS', 'STUMPS', 'BOUNDARY', 'AOQZ']
+const wordsToFind =['BOWLING', 'STUMPED', 'FIELDER', 'BATSMAN', 'RUNOUT', 'CATCH', 'UMPIRE', 'INNING', 'APPEAL', 'BATTING', 'SPIN', 'TEA', 'RUNS', 'STUMPS', 'BOUNDARY']
 const alphabetMatrixRows = ['OUMBAMRUNOUTFHWNT', 'SZIKQRWHZZTMATITE', 'THERUNSHXILNNHGUA', 'UDWZMQFBYWRPOSNFO', 'MTIYICENJGBOWLING', 'PUGBNAOCRRAXAYEPQ', 'EYBONNPSPPTQWFUJR', 'DLTCICZTPISTGKKCE', 'KQSONZAUVIMSJBFAI', 'LNFQGUYMIPASFAFTE', 'OISQSKSPFHNYZTNCV', 'QHHKASVSYXUHBTHHB', 'HCMXJCXAMIVHOIPSJ', 'SUMPIREWOTVEVNTPH', 'SQHTYSVNOQSYFGJOZ', 'HBOUNDARYAZWRIFYO', 'QSGEDMKSLNOVDEJED', 'TDCJEFIELDERJHDDM', 'YARWXAFYNQSMZHDDV', 'URJLWZGXZWSVFUXAG', 'HSPINTAGVCVISDZUJ', 'VNHUEVFRVAPPEALHE' ];
-const alphabetMatrix = alphabetMatrixRows.map(row=> {return row.split('')});
-console.log(alphabetMatrix);
+
+
+const alphabetMatrix = alphabetMatrixRows.map(row=> row.split(''));
 export let indexToHighlight = [];
 let wordsFound = [];
 
-// Rows and columns in the given grid
-let R = alphabetMatrix.length; 
-let C = alphabetMatrix[0].length;
+// Rows and columns in the given matrix
+let ROWS = alphabetMatrix.length; 
+let COLUMNS = alphabetMatrix[0].length;
  
 // For searching in all 8 direction
-let x=[-1, -1, -1, 0, 0, 1, 1, 1];
-let y=[-1, 0, 1, -1, 1, -1, 0, 1];
+let x_direction = [-1, -1, -1, 0, 0, 1, 1, 1];
+let y_direction = [-1, 0, 1, -1, 1, -1, 0, 1];
 
 
 function App() {
@@ -28,21 +29,15 @@ function App() {
     }, 3000)
   }, [errorMessage]);
 
-  function changeHandler(event) {
-    setQuery(event.target.value);
-  }
-
   function clickHandler() {
     let queryItem = query.toUpperCase();
     if (queryItem === '') {
       alert('Enter a word before submitting!')
       return;
     }
-    if(patternSearch(alphabetMatrix, queryItem) && wordsToFind.includes(queryItem)) {
-      console.log(patternSearch(alphabetMatrix, queryItem));
-      indexToHighlight = [...indexToHighlight, ...patternSearch(alphabetMatrix, queryItem)];
+    if(findIndices(alphabetMatrix, queryItem) && wordsToFind.includes(queryItem)) {
+      indexToHighlight = [...indexToHighlight, ...findIndices(alphabetMatrix, queryItem)];
       wordsFound.push(queryItem);
-      console.log('indixes to highlight', indexToHighlight);
     } else {
       setErrorMessage('visible')
     }
@@ -54,74 +49,67 @@ function App() {
     return;
   }
 
-  function search2D(grid,row,col,word) {
+  // to find direction of the word and whether it exists or not in the matrix
+  function searchDirection(matrix, row, col, word) {
  
-  if (grid[row][col] !== word[0])
+  if (matrix[row][col] !== word[0])
     return [];
 
   let len = word.length;
   let res = []
   
+  for (let direction = 0; direction < 8; direction++) {
+    let k, rd = row + x_direction[direction], cd = col + y_direction[direction];
 
-  // Search word in all 8 directions starting from (row, col)
-  for (let dir = 0; dir < 8; dir++) {
-    // Initialize starting point for current direction
-    let k, rd = row + x[dir], cd = col + y[dir];
-    //  console.log('from first for loop', rd, cd);
-
-    // First character is already checked, match remaining characters
+    // Check for first character
     for (k = 1; k < len; k++) {
-      // If out of bound break
-      if (rd >= R || rd < 0 || cd >= C || cd < 0)
+      if (rd >= ROWS || rd < 0 || cd >= COLUMNS || cd < 0)
+          break  
+
+      if (matrix[rd][cd] !== word[k])
           break;
 
-      // If not matched, break
-      if (grid[rd][cd] !== word[k])
-          break;
-
-      // Moving in particular direction
-      // console.log(rd, cd);
-      rd += x[dir];
-      cd += y[dir];
+      rd += x_direction[direction];
+      cd += y_direction[direction];
     }
-      // If all character matched, then value of must be equal to length of word
-      if (k === len) res.push(dir)
+      // Final check
+      if (k === len) res.push(direction)
   }
   return res;
 }
 
-// Searches given word in a given matrix in all 8 directions
-function patternSearch(grid,word) {
-    let indices = [];
-    // Consider every point as starting point and search given word
-    for (let row = 0; row < R; row++) {
-        for (let col = 0; col < C; col++) {
-          let directions = search2D(grid, row, col, word)
-          indices = [...indices, ...findIndices(row, col, word, directions)]
-        }
-    }
-    return indices;
-}
-
-function findIndices(row, col, word, directions) {
+//Traverse in the given direction and form index array
+function directionTraversal(row, col, word, directions) {
   if (directions.length === 0) return []; 
   let indices = [[row, col]];
-  console.log('dir', directions);
   for (let dir of directions) {
       for (let i = 1; i < word.length; i++) {
-          indices.push([row + (i*x[dir]), col + (i*y[dir])])
+          indices.push([row + (i*x_direction[dir]), col + (i*y_direction[dir])])
       }
   }
   return indices;
 }
 
+
+function findIndices(matrix,word) {
+    let indices = [];
+    for (let row = 0; row < ROWS; row++) {
+        for (let col = 0; col < COLUMNS; col++) {
+          let directions = searchDirection(matrix, row, col, word)
+          indices = [...indices, ...directionTraversal(row, col, word, directions)]
+        }
+    }
+    return indices;
+}
+
+
 function isFound(array1, array2, str) {
   let filteredArray = array1.filter(value => array2.includes(value));
-  // console.log('filtered Array', filteredArray);
   if (!filteredArray.includes(str)) return false
   return true
 }
 
+  //markup
   return (
     <div className="App">
       <div className='left-pane'>
@@ -131,12 +119,11 @@ function isFound(array1, array2, str) {
         </div>
       </div>
       <div className='right-pane'>
-        <input className='query-input' type='text' placeholder='Enter the Word' value={query} onChange={(event)=> changeHandler(event)}/>
+        <input className='query-input' type='text' placeholder='Enter the Word' value={query} onChange={(event)=> setQuery(event.target.value)} />
         <button className='query-button' onClick={()=> clickHandler()} type='submit'> SUBMIT </button>
         <table>
           <tbody>
             {alphabetMatrix.map((row, i)=> <tr key={i} id={i}>{row.map((alphabet, j)=> <TableDataItem key= {i+j} row={i} column={j} content={alphabet} />)}</tr>)}
-            {/* {displayAlphabetMatrix(alphabetMatrix)} */}
           </tbody>
         </table>
         <h4 className='error-message' style={{visibility: errorMessage, color: 'red'}}>The Word you entered doesn't exist!</h4>

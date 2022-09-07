@@ -1,38 +1,90 @@
 .App {
-  text-align: center;
+    box-sizing: border-box;
+    display: flex;
+    gap: 2rem;
+    margin: 1rem 2rem;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.left-pane {
+    border: 3px solid steelblue;
+    width: 400px;
+    display: flex;
+    flex-flow: column wrap;
+    align-items: center;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.left-pane > h2 {
+    text-align: center;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.words-box {
+    border: 3px solid black;
+    padding: 1rem 2rem;
 }
 
-.App-link {
-  color: #61dafb;
+.search-word {
+    list-style: none;
+    line-height: 2rem;
+    font-weight: bold;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.right-pane {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
 }
+
+.query-input {
+    grid-column: 1 / span 2;
+    height: 50px;
+    padding: 0.5rem 1rem;
+    font-size: 2rem;
+}
+
+.query-button {
+    color: white;
+    background: #14C38E;
+    border: none;
+    font-size: 2rem;
+}
+
+table {
+    grid-column: 1 / span 3;
+    border-collapse: collapse;
+    border: 3px solid black;
+    padding: 10px;
+}
+
+td {
+    border: 1px solid black;
+    text-align: center;
+    font-weight: 500;
+}
+
+.error-message {
+    grid-column: 1 / span 3;
+    place-self: center;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.selected {
+    background: lightgreen;
+} 
+
